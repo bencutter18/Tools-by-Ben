@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daily Availability Board</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --card2:#0f1730;
+      --text:#e9eefc;
+      --muted:#a9b3d4;
+      --border:#243059;
+      --accent:#6ea8ff;
+      --good:#2ee59d;
+      --mid:#ffd166;
+      --low:#ff6b6b;
+      --none:#98a2b3;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      font-synthesis-weight: none;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 700px at 10% 10%, rgba(110,168,255,.18), transparent 60%),
+                  radial-gradient(900px 600px at 90% 30%, rgba(46,229,157,.14), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    header{
+      padding: 22px 18px 10px;
+      max-width: 1100px;
+      margin: 0 auto;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 16px;
+    }
+    h1{margin:0;font-size:20px;letter-spacing:.2px}
+    .sub{color:var(--muted);margin-top:6px;font-size:13px}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background: rgba(18,26,51,.65);
+      border:1px solid var(--border);
+      padding:10px 12px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      white-space:nowrap;
+    }
+    .pill small{color:var(--muted)}
+    main{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10px 18px 26px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+    }
+    @media (max-width: 920px){
+      main{grid-template-columns: 1fr}
+      header{flex-direction:column;align-items:stretch}
+      .pill{justify-content:space-between}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(18,26,51,.92), rgba(18,26,51,.72));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid rgba(36,48,89,.8);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .card .hd h2{
+      margin:0;
+      font-size: 14px;
+      color: var(--text);
+      letter-spacing:.2px;
+    }
+    .card .bd{padding: 14px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    button, input, select, textarea{
+      font: inherit;
+      color: var(--text);
+      background: rgba(15,23,48,.75);
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 10px;
+      outline: none;
+    }
+    input::placeholder{color: rgba(169,179,212,.7)}
+    button{
+      cursor:pointer;
+      background: rgba(110,168,255,.16);
+      border-color: rgba(110,168,255,.35);
+      transition: transform .05s ease, background .2s ease, border-color .2s ease;
+    }
+    button:hover{background: rgba(110,168,255,.22); border-color: rgba(110,168,255,.5)}
+    button:active{transform: translateY(1px)}
+    .btn-ghost{
+      background: transparent;
+      border-color: rgba(36,48,89,.9);
+    }
+    .btn-danger{
+      background: rgba(255,107,107,.15);
+      border-color: rgba(255,107,107,.35);
+    }
+    .btn-danger:hover{
+      background: rgba(255,107,107,.22);
+      border-color: rgba(255,107,107,.5);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+    @media (max-width: 520px){
+      .grid{grid-template-columns: 1fr}
+    }
+    .member{
+      background: rgba(15,23,48,.6);
+      border: 1px solid rgba(36,48,89,.8);
+      border-radius: 14px;
+      padding: 12px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+    }
+    .avatar{
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      background: rgba(110,168,255,.10);
+      border: 1px solid rgba(110,168,255,.25);
+      display:flex; align-items:center; justify-content:center;
+      font-size: 22px;
+      flex: 0 0 auto;
+    }
+    .meta{flex: 1 1 auto; min-width: 0}
+    .name{
+      font-weight: 650;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      margin-bottom: 6px;
+      min-width: 0;
+    }
+    .tag{
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(36,48,89,.9);
+      color: var(--muted);
+      background: rgba(11,16,32,.25);
+      white-space:nowrap;
+    }
+    .status{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(36,48,89,.9);
+      background: rgba(11,16,32,.2);
+    }
+    .dot{width:9px; height:9px; border-radius:50%}
+    .dot.good{background: var(--good)}
+    .dot.mid{background: var(--mid)}
+    .dot.low{background: var(--low)}
+    .dot.none{background: var(--none)}
+    .muted{color: var(--muted)}
+    .small{font-size:12px;color:var(--muted)}
+    .divider{height:1px;background: rgba(36,48,89,.8); margin: 12px 0}
+    .avatars{
+      display:grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 520px){
+      .avatars{grid-template-columns: repeat(6, 1fr)}
+    }
+    .ava{
+      padding: 10px 0;
+      text-align:center;
+      border-radius: 12px;
+      border: 1px solid rgba(36,48,89,.9);
+      background: rgba(15,23,48,.55);
+      cursor:pointer;
+      user-select:none;
+      font-size: 18px;
+    }
+    .ava.selected{
+      outline: 2px solid rgba(110,168,255,.6);
+      border-color: rgba(110,168,255,.55);
+      background: rgba(110,168,255,.12);
+    }
+
+    .ava.disabled{
+        opacity: .35;
+        cursor: not-allowed;
+        filter: grayscale(60%);
+        }
+
+    .right-actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap: wrap;
+    }
+    .kpi{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .kpi .chip{font-size:12px}
+    .notice{
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,209,102,.10);
+      border: 1px solid rgba(255,209,102,.25);
+      color: rgba(255,209,102,.95);
+      margin-top: 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Daily Availability Board</h1>
+      <div class="sub">
+        Everyone picks their tier for <span id="todayLabel"></span>. Automatically resets each day.
+      </div>
+      <div class="kpi" id="kpis"></div>
+    </div>
+    <div class="pill">
+      <div>
+        <div><strong id="datePill"></strong></div>
+        <small class="muted">Data stored in this browser</small>
+      </div>
+      <button class="btn-ghost" id="exportBtn" title="Copy JSON to clipboard">Export</button>
+      <button class="btn-ghost" id="importBtn" title="Paste JSON from clipboard">Import</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="hd">
+        <h2>Team status</h2>
+        <div class="right-actions">
+          <input id="search" placeholder="Search name…" />
+          <select id="sort">
+            <option value="tier-desc">Sort: Most free</option>
+            <option value="tier-asc">Sort: Least free</option>
+            <option value="name">Sort: Name</option>
+            <option value="updated">Sort: Recently updated</option>
+          </select>
+          <button class="btn-ghost" id="resetBtn" title="Clear today only">Reset Today</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid" id="memberGrid"></div>
+        <div class="notice">
+          Tip: If you want this to be shared across the team, you’ll need a tiny backend (or a shared Google Sheet / Airtable).
+          This version is “local-only” and great for a quick prototype.
+        </div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="hd">
+        <h2>Add / update yourself</h2>
+        <div class="small" id="dailyKey"></div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <input id="newName" placeholder="Your name (e.g., Sam)" style="flex:1 1 220px" />
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="small">Pick your character</div>
+        <div class="avatars" id="avatarPicker"></div>
+
+        <div class="divider"></div>
+
+        <div class="small">How free are you today?</div>
+        <select id="tier" style="width:100%; margin-top:8px">
+          <option value="3">🟢 Green — fully available (deep work / tasks)</option>
+          <option value="2">🟡 Yellow — partially available (some tasks)</option>
+          <option value="1">🟠 Orange — limited (quick help only)</option>
+          <option value="0">⚫ Gray — not available today</option>
+        </select>
+
+        <textarea id="note" rows="3" placeholder="Optional note (e.g., ‘In meetings 2–4pm’)"></textarea>
+
+        <div class="row" style="margin-top:10px">
+          <button id="saveBtn" style="flex:1 1 180px">Save my status</button>
+          <button id="removeBtn" class="btn-danger" title="Remove your profile">Remove</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="small muted">
+          This will be saved for <strong>today only</strong>. Tomorrow starts fresh automatically.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    // ====== Daily reset key ======
+    const pad2 = n => String(n).padStart(2, '0');
+    function todayKey() {
+      const d = new Date();
+      // Local date key: YYYY-MM-DD
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+
+    const STORAGE_PREFIX = "availability_board_v1";
+    function storageKeyForDay(dayKey){ return `${STORAGE_PREFIX}::${dayKey}`; }
+
+    // ====== Tiers ======
+    const TIERS = {
+      3: { label: "Green — fully available", dot: "good" },
+      2: { label: "Yellow — partially available", dot: "mid" },
+      1: { label: "Orange — limited", dot: "low" },
+      0: { label: "Gray — not available", dot: "none" }
+    };
+
+    // ====== Avatars (little characters) ======
+    const AVATARS = ["🦊","🐼","🐸","🦄","🐙","🐧","🦁","🐨","🐝","🐢","🐰","🐯","🦉","🐶","🐱","🐻","🦖","🤖","👾","🧙‍♂️","🧑‍🚀","🧛‍♀️","🧜‍♂️","🧚‍♀️"];
+
+    // ====== State ======
+    let day = todayKey();
+    let selectedAvatar = AVATARS[0];
+
+    function loadState() {
+      const raw = localStorage.getItem(storageKeyForDay(day));
+      if (!raw) return { members: [] };
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.members)) return { members: [] };
+        return parsed;
+      } catch {
+        return { members: [] };
+      }
+    }
+
+    function saveState(state) {
+      localStorage.setItem(storageKeyForDay(day), JSON.stringify(state));
+    }
+
+    function normalizeName(name){
+      return (name || "").trim().replace(/\s+/g, " ");
+    }
+
+    function upsertMember(state, member) {
+      const nameKey = member.name.toLowerCase();
+      const idx = state.members.findIndex(m => (m.name || "").toLowerCase() === nameKey);
+      if (idx >= 0) state.members[idx] = { ...state.members[idx], ...member };
+      else state.members.push(member);
+      return state;
+    }
+
+    function removeMember(state, name) {
+      const key = (name||"").toLowerCase();
+      state.members = state.members.filter(m => (m.name||"").toLowerCase() !== key);
+      return state;
+    }
+
+    // ====== UI ======
+    const el = id => document.getElementById(id);
+    const memberGrid = el("memberGrid");
+    const todayLabel = el("todayLabel");
+    const datePill = el("datePill");
+    const dailyKey = el("dailyKey");
+
+    function prettyDate(d = new Date()){
+      return d.toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"short", day:"numeric" });
+    }
+
+    function renderKPIs(members){
+      const counts = {3:0,2:0,1:0,0:0};
+      members.forEach(m => counts[m.tier] = (counts[m.tier]||0)+1);
+
+      const total = members.length;
+      const kpis = [
+        { tier:3, text:`🟢 ${counts[3]||0} green` },
+        { tier:2, text:`🟡 ${counts[2]||0} yellow` },
+        { tier:1, text:`🟠 ${counts[1]||0} orange` },
+        { tier:0, text:`⚫ ${counts[0]||0} gray` },
+        { tier:null, text:`👥 ${total} total` }
+      ];
+
+      const wrap = el("kpis");
+      wrap.innerHTML = "";
+      kpis.forEach(k => {
+        const div = document.createElement("span");
+        div.className = "chip";
+        div.textContent = k.text;
+        wrap.appendChild(div);
+      });
+    }
+
+    function sortMembers(members){
+      const mode = el("sort").value;
+      const copy = [...members];
+
+      if (mode === "name") {
+        copy.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+      } else if (mode === "updated") {
+        copy.sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0));
+      } else if (mode === "tier-asc") {
+        copy.sort((a,b)=> (a.tier - b.tier) || (a.name||"").localeCompare(b.name||""));
+      } else { // tier-desc
+        copy.sort((a,b)=> (b.tier - a.tier) || (a.name||"").localeCompare(b.name||""));
+      }
+      return copy;
+    }
+
+    function renderMembers(state){
+      const q = (el("search").value || "").trim().toLowerCase();
+      let members = state.members;
+
+      if (q) members = members.filter(m => (m.name||"").toLowerCase().includes(q));
+
+      members = sortMembers(members);
+
+      renderKPIs(state.members);
+
+      memberGrid.innerHTML = "";
+      if (members.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "muted";
+        empty.textContent = q ? "No matches." : "No one has added themselves yet. Use the form on the right.";
+        memberGrid.appendChild(empty);
+        return;
+      }
+
+      members.forEach(m => {
+        const tierInfo = TIERS[m.tier] || TIERS[0];
+        const card = document.createElement("div");
+        card.className = "member";
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.textContent = m.avatar || "🙂";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const name = document.createElement("div");
+        name.className = "name";
+        const nameText = document.createElement("span");
+        nameText.textContent = m.name || "(no name)";
+        nameText.style.overflow = "hidden";
+        nameText.style.textOverflow = "ellipsis";
+        nameText.style.whiteSpace = "nowrap";
+        nameText.style.maxWidth = "100%";
+
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = m.updatedAt ? `Updated ${new Date(m.updatedAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}` : "Not set";
+
+        name.appendChild(nameText);
+        name.appendChild(tag);
+
+        const status = document.createElement("div");
+        status.className = "status";
+
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        const dot = document.createElement("span");
+        dot.className = `dot ${tierInfo.dot}`;
+        const label = document.createElement("span");
+        label.textContent = tierInfo.label;
+
+        chip.appendChild(dot);
+        chip.appendChild(label);
+
+        const note = document.createElement("div");
+        note.className = "muted";
+        note.style.marginTop = "8px";
+        note.textContent = (m.note || "").trim() ? `Note: ${m.note.trim()}` : "—";
+        note.style.fontSize = "12px";
+
+        status.appendChild(chip);
+        meta.appendChild(name);
+        meta.appendChild(status);
+        meta.appendChild(note);
+
+        // Click card to load into form for quick updates
+        card.addEventListener("click", () => {
+          el("newName").value = m.name || "";
+          el("tier").value = String(m.tier ?? 0);
+          el("note").value = m.note || "";
+          selectedAvatar = m.avatar || selectedAvatar;
+          renderAvatarPicker();
+        });
+
+        card.appendChild(avatar);
+        card.appendChild(meta);
+        memberGrid.appendChild(card);
+      });
+    }
+
+    function getUsedAvatars(state, excludeName){
+  const ex = (excludeName || "").trim().toLowerCase();
+  const used = new Set();
+  state.members.forEach(m => {
+    const n = (m.name || "").trim().toLowerCase();
+    if (!m.avatar) return;
+    // If I'm editing myself, don't lock my own current avatar against me
+    if (ex && n === ex) return;
+    used.add(m.avatar);
+  });
+  return used;
+}
+
+function renderAvatarPicker(){
+  const state = loadState();
+  const myName = normalizeName(el("newName").value);
+  const used = getUsedAvatars(state, myName);
+
+  const wrap = el("avatarPicker");
+  wrap.innerHTML = "";
+
+  AVATARS.forEach(a => {
+    const isUsed = used.has(a);
+    const div = document.createElement("div");
+
+    div.className =
+      "ava" +
+      (a === selectedAvatar ? " selected" : "") +
+      (isUsed ? " disabled" : "");
+
+    div.textContent = a;
+    div.title = isUsed ? "Already taken today" : ("Select " + a);
+
+    if (!isUsed) {
+      div.addEventListener("click", () => {
+        selectedAvatar = a;
+        renderAvatarPicker();
+      });
+    }
+
+    wrap.appendChild(div);
+  });
+}
+
+
+    // ====== Events ======
+    function init(){
+      // Update day label / key
+      day = todayKey();
+      todayLabel.textContent = prettyDate(new Date());
+      datePill.textContent = prettyDate(new Date());
+      dailyKey.textContent = `Storage key: ${storageKeyForDay(day)}`;
+
+      renderAvatarPicker();
+
+      // Load + render
+      let state = loadState();
+      renderMembers(state);
+
+      el("search").addEventListener("input", () => renderMembers(loadState()));
+      el("sort").addEventListener("change", () => renderMembers(loadState()));
+
+      el("saveBtn").addEventListener("click", () => {
+        const name = normalizeName(el("newName").value);
+        if (!name) {
+          alert("Please enter your name.");
+          return;
+        }
+        const tier = Number(el("tier").value);
+        const note = (el("note").value || "").trim();
+        
+        const stateNow = loadState();
+        const used = getUsedAvatars(stateNow, name);
+        if (used.has(selectedAvatar)) {
+        alert("That character is already taken today. Please choose another one.");
+        renderAvatarPicker();
+        return;
+        }
+
+        const member = {
+          name,
+          avatar: selectedAvatar,
+          tier: Number.isFinite(tier) ? tier : 0,
+          note,
+          updatedAt: Date.now()
+        };
+
+        state = loadState();
+        upsertMember(state, member);
+        saveState(state);
+        renderMembers(state);
+      });
+
+      el("removeBtn").addEventListener("click", () => {
+        const name = normalizeName(el("newName").value);
+        if (!name) { alert("Enter your name to remove your profile."); return; }
+        if (!confirm(`Remove "${name}" from today's board?`)) return;
+        const state = loadState();
+        removeMember(state, name);
+        saveState(state);
+        renderMembers(state);
+      });
+
+      el("resetBtn").addEventListener("click", () => {
+        if (!confirm("Clear today’s board for this browser?")) return;
+        localStorage.removeItem(storageKeyForDay(day));
+        renderMembers(loadState());
+      });
+
+      el("exportBtn").addEventListener("click", async () => {
+        const state = loadState();
+        const json = JSON.stringify({ day, ...state }, null, 2);
+        try{
+          await navigator.clipboard.writeText(json);
+          alert("Exported JSON to clipboard.");
+        } catch {
+          prompt("Copy this JSON:", json);
+        }
+        el("newName").addEventListener("input", () => {
+  renderAvatarPicker();
+});
+
+      });
+
+      el("importBtn").addEventListener("click", async () => {
+        let text = "";
+        try{
+          text = await navigator.clipboard.readText();
+        } catch {
+          text = prompt("Paste JSON to import:") || "";
+        }
+        if (!text.trim()) return;
+
+        try{
+          const parsed = JSON.parse(text);
+          if (!parsed || !Array.isArray(parsed.members)) throw new Error("Invalid format");
+          // Import into *today* (ignoring parsed.day)
+          saveState({ members: parsed.members });
+          renderMembers(loadState());
+          alert("Imported into today's board.");
+        } catch (e) {
+          alert("Import failed: " + (e.message || "Invalid JSON"));
+        }
+      });
+
+      // Auto-refresh if date changes while tab is open (midnight rollover)
+      setInterval(() => {
+        const newDay = todayKey();
+        if (newDay !== day) {
+          day = newDay;
+          todayLabel.textContent = prettyDate(new Date());
+          datePill.textContent = prettyDate(new Date());
+          dailyKey.textContent = `Storage key: ${storageKeyForDay(day)}`;
+          renderMembers(loadState());
+        }
+      }, 30 * 1000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
